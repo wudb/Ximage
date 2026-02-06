@@ -123,7 +123,7 @@ fn compress_image(
 
     // Create a secure temporary directory for this operation
     let temp_dir = std::env::temp_dir()
-        .join("x-image-compress")
+        .join("Ximage-compress")
         .join(Uuid::new_v4().to_string());
     std::fs::create_dir_all(&temp_dir).map_err(|e| anyhow!("Failed to create temp dir: {}", e))?;
 
@@ -400,7 +400,7 @@ async fn compress_uploaded_files(
 
     // Create a secure temporary directory for this operation
     let temp_dir = std::env::temp_dir()
-        .join("x-image-upload")
+        .join("Ximage-upload")
         .join(Uuid::new_v4().to_string());
     std::fs::create_dir_all(&temp_dir).map_err(|e| format!("Failed to create temp dir: {}", e))?;
 

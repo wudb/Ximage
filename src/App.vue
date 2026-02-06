@@ -10,6 +10,7 @@ interface CompressionSettings {
   qualityJpg: number;
   qualityWebp: number;
   qualityPng: number;
+  theme: 'system' | 'light' | 'dark';
 }
 
 interface FileItem {
@@ -28,6 +29,7 @@ const settings = ref<CompressionSettings>({
   qualityJpg: 50,
   qualityWebp: 65,
   qualityPng: 80,
+  theme: 'system',
 });
 
 const files = ref<FileItem[]>([]);
@@ -36,8 +38,132 @@ const totalProgress = ref(0);
 const isDragging = ref(false);
 const outputPath = ref<string>('');
 
-const settingsStorageKey = 'x-image:settings';
-const outputPathStorageKey = 'x-image:output-path';
+const settingsStorageKey = 'Ximage:settings';
+const outputPathStorageKey = 'Ximage:output-path';
+const localeKey = 'Ximage:locale';
+
+type Locale = 'zh' | 'en';
+const locale = ref<Locale>('en');
+
+const detectLocale = (): Locale => {
+  const lang = (navigator.language || '').toLowerCase();
+  if (lang.startsWith('zh') || lang.includes('-cn')) return 'zh';
+  return 'en';
+};
+
+const i18n: Record<Locale, Record<string, string>> = {
+  zh: {
+    appName: 'Ximage 图片压缩工具',
+    settings: '压缩设置',
+    lossless: '无损压缩',
+    losslessHint: '保持原始画质，文件大小可能较大',
+    jpgQuality: 'JPG 质量',
+    webpQuality: 'WEBP 质量',
+    pngQuality: 'PNG 质量',
+    savePath: '保存位置',
+    saveDefault: '默认位置（原文件所在目录）',
+    savePicked: '压缩后的图片将保存到选择的文件夹',
+    saveOverwrite: '未选择时将覆盖原文件',
+    choose: '选择...',
+    compress: '压缩图片',
+    compressing: '压缩中...',
+    stats: '统计信息',
+    filesCount: '文件数量',
+    totalSize: '总大小',
+    optimize: '优化',
+    dropHere: '拖拽图片到这里',
+    supported: '支持 PNG、JPG、WebP 格式',
+    chooseFiles: '选择文件',
+    fileList: '文件列表',
+    addFiles: '添加文件',
+    clear: '清空',
+    totalProgress: '总进度',
+    preview: '预览',
+    fileName: '文件名',
+    format: '格式',
+    size: '大小',
+    status: '状态',
+    result: '结果',
+    statusPending: '等待中',
+    statusProcessing: '压缩中',
+    statusSuccess: '成功',
+    statusError: '失败',
+    theme: '主题',
+    themeSystem: '跟随系统',
+    themeLight: '明亮',
+    themeDark: '暗黑',
+    dragNoPath: '拖拽添加的文件无法覆盖原文件，请选择保存位置或使用“选择文件”导入。',
+    selectOutputTitle: '选择压缩后图片的保存位置',
+    selectFileTitle: '选择图片文件',
+    imageFiles: '图片文件',
+    low: '低',
+    high: '高',
+  },
+  en: {
+    appName: 'Ximage Image Compressor',
+    settings: 'Compression Settings',
+    lossless: 'Lossless',
+    losslessHint: 'Preserve quality; file size may be larger',
+    jpgQuality: 'JPG Quality',
+    webpQuality: 'WEBP Quality',
+    pngQuality: 'PNG Quality',
+    savePath: 'Save Location',
+    saveDefault: 'Default (original folder)',
+    savePicked: 'Compressed files will be saved to the selected folder',
+    saveOverwrite: 'If not selected, original files will be overwritten',
+    choose: 'Choose...',
+    compress: 'Compress Images',
+    compressing: 'Compressing...',
+    stats: 'Statistics',
+    filesCount: 'Files',
+    totalSize: 'Total Size',
+    optimize: 'Optimization',
+    dropHere: 'Drop images here',
+    supported: 'Supports PNG, JPG, WebP',
+    chooseFiles: 'Select Files',
+    fileList: 'Files',
+    addFiles: 'Add Files',
+    clear: 'Clear',
+    totalProgress: 'Overall Progress',
+    preview: 'Preview',
+    fileName: 'Name',
+    format: 'Format',
+    size: 'Size',
+    status: 'Status',
+    result: 'Result',
+    statusPending: 'Pending',
+    statusProcessing: 'Processing',
+    statusSuccess: 'Success',
+    statusError: 'Error',
+    theme: 'Theme',
+    themeSystem: 'System',
+    themeLight: 'Light',
+    themeDark: 'Dark',
+    dragNoPath: 'Dragged files cannot overwrite originals. Please choose a save location or use “Select Files”.',
+    selectOutputTitle: 'Select output folder',
+    selectFileTitle: 'Select image files',
+    imageFiles: 'Images',
+    low: 'Low',
+    high: 'High',
+  }
+};
+
+type I18nKey = keyof (typeof i18n)['en'];
+const t = (key: I18nKey) => i18n[locale.value][key];
+
+const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+const handleSystemThemeChange = () => {
+  if (settings.value.theme === 'system') {
+    applyTheme('system');
+  }
+};
+const applyTheme = (theme: CompressionSettings['theme']) => {
+  const resolved = theme === 'system'
+    ? (systemThemeQuery.matches ? 'dark' : 'light')
+    : theme;
+  document.documentElement.classList.toggle('theme-dark', resolved === 'dark');
+  document.documentElement.classList.toggle('theme-light', resolved === 'light');
+};
 
 const getMimeType = (fileName: string): string => {
   const lowerExt = fileName.split('.').pop()?.toLowerCase() || '';
@@ -126,6 +252,16 @@ onMounted(async () => {
     if (storedOutputPath) {
       outputPath.value = storedOutputPath;
     }
+    const storedLocale = localStorage.getItem(localeKey);
+    if (storedLocale === 'zh' || storedLocale === 'en') {
+      locale.value = storedLocale;
+    } else {
+      locale.value = detectLocale();
+      localStorage.setItem(localeKey, locale.value);
+    }
+
+    applyTheme(settings.value.theme);
+    systemThemeQuery.addEventListener('change', handleSystemThemeChange);
 
     unlistenDragDrop = await getCurrentWebview().onDragDropEvent(async (event) => {
       const payload = 'payload' in event ? event.payload : event;
@@ -159,6 +295,13 @@ watch(
   { deep: true }
 );
 
+watch(
+  () => settings.value.theme,
+  (value) => {
+    applyTheme(value);
+  }
+);
+
 watch(outputPath, (value) => {
   if (value) {
     localStorage.setItem(outputPathStorageKey, value);
@@ -167,11 +310,20 @@ watch(outputPath, (value) => {
   }
 });
 
+watch(
+  () => locale.value,
+  () => {
+    document.title = t('appName');
+  },
+  { immediate: true }
+);
+
 onBeforeUnmount(() => {
   if (unlistenDragDrop) {
     unlistenDragDrop();
     unlistenDragDrop = null;
   }
+  systemThemeQuery.removeEventListener('change', handleSystemThemeChange);
 });
 
 const selectOutputPath = async () => {
@@ -179,7 +331,7 @@ const selectOutputPath = async () => {
     const selected = await open({
       directory: true,
       multiple: false,
-      title: '选择压缩后图片的保存位置'
+      title: t('selectOutputTitle')
     });
     if (selected) {
       outputPath.value = selected as string;
@@ -194,9 +346,9 @@ const selectFiles = async () => {
     const selected = await open({
       directory: false,
       multiple: true,
-      title: '选择图片文件',
+      title: t('selectFileTitle'),
       filters: [{
-        name: '图片文件',
+        name: t('imageFiles'),
         extensions: ['png', 'jpg', 'jpeg', 'webp']
       }]
     });
@@ -232,10 +384,10 @@ const formatSize = (size: number): string => {
 
 const getStatusText = (status: string): string => {
   switch (status) {
-    case 'pending': return '等待中';
-    case 'processing': return '压缩中';
-    case 'success': return '成功';
-    case 'error': return '失败';
+    case 'pending': return t('statusPending');
+    case 'processing': return t('statusProcessing');
+    case 'success': return t('statusSuccess');
+    case 'error': return t('statusError');
     default: return status;
   }
 };
@@ -297,7 +449,7 @@ const compressImages = async () => {
   if (!outputPath.value) {
     const hasMissingPath = files.value.some(file => !file.path);
     if (hasMissingPath) {
-      alert('拖拽添加的文件无法覆盖原文件，请选择保存位置或使用“选择文件”导入。');
+      alert(t('dragNoPath'));
       return;
     }
   }
@@ -377,7 +529,7 @@ const clearFiles = () => {
     <header class="app-header">
       <div class="app-title">
         <img class="app-icon" src="/src-tauri/icons/icon.png" alt="Ximage" />
-        <span>Ximage 图片压缩工具</span>
+        <span>{{ t('appName') }}</span>
       </div>
     </header>
 
@@ -392,74 +544,85 @@ const clearFiles = () => {
                 <circle cx="12" cy="12" r="3" />
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
               </svg>
-              <h3>压缩设置</h3>
+              <h3>{{ t('settings') }}</h3>
             </div>
 
             <div class="setting-group">
               <label class="checkbox-label">
                 <input type="checkbox" v-model="settings.lossless" />
-                <span>无损压缩</span>
+                <span>{{ t('lossless') }}</span>
               </label>
-              <p class="hint">保持原始画质，文件大小可能较大</p>
+              <p class="hint">{{ t('losslessHint') }}</p>
             </div>
 
             <div class="setting-group" v-if="!settings.lossless">
-              <label class="input-label">JPG 质量: {{ settings.qualityJpg }}%</label>
+              <label class="input-label">{{ t('jpgQuality') }}: {{ settings.qualityJpg }}%</label>
               <input type="range" v-model.number="settings.qualityJpg" min="10" max="100" class="slider" />
               <div class="range-labels">
-                <span>低</span>
-                <span>高</span>
+                <span>{{ t('low') }}</span>
+                <span>{{ t('high') }}</span>
               </div>
             </div>
 
             <div class="setting-group" v-if="!settings.lossless">
-              <label class="input-label">WEBP 质量: {{ settings.qualityWebp }}%</label>
+              <label class="input-label">{{ t('webpQuality') }}: {{ settings.qualityWebp }}%</label>
               <input type="range" v-model.number="settings.qualityWebp" min="10" max="100" class="slider" />
               <div class="range-labels">
-                <span>低</span>
-                <span>高</span>
+                <span>{{ t('low') }}</span>
+                <span>{{ t('high') }}</span>
               </div>
             </div>
 
             <div class="setting-group" v-if="!settings.lossless">
-              <label class="input-label">PNG 质量: {{ settings.qualityPng }}%</label>
+              <label class="input-label">{{ t('pngQuality') }}: {{ settings.qualityPng }}%</label>
               <input type="range" v-model.number="settings.qualityPng" min="10" max="100" class="slider" />
               <div class="range-labels">
-                <span>低</span>
-                <span>高</span>
+                <span>{{ t('low') }}</span>
+                <span>{{ t('high') }}</span>
               </div>
             </div>
 
             <div class="setting-group">
-              <label class="input-label">保存位置</label>
+              <label class="input-label">{{ t('savePath') }}</label>
               <div class="path-row">
-                <input type="text" :value="outputPath || '默认位置（原文件所在目录）'" readonly />
-                <button @click="selectOutputPath">选择...</button>
+                <input type="text" :value="outputPath || t('saveDefault')" readonly />
+                <button @click="selectOutputPath">{{ t('choose') }}</button>
               </div>
-              <p class="hint">{{ outputPath ? '压缩后的图片将保存到选择的文件夹' : '未选择时将覆盖原文件' }}</p>
+              <p class="hint">{{ outputPath ? t('savePicked') : t('saveOverwrite') }}</p>
+            </div>
+
+            <div class="setting-group">
+              <label class="input-label">{{ t('theme') }}</label>
+              <div class="path-row">
+                <select v-model="settings.theme">
+                  <option value="system">{{ t('themeSystem') }}</option>
+                  <option value="light">{{ t('themeLight') }}</option>
+                  <option value="dark">{{ t('themeDark') }}</option>
+                </select>
+              </div>
             </div>
 
             <div class="button-row">
               <button class="btn-compress" :disabled="files.length === 0 || isCompressing" @click="compressImages">
-                {{ isCompressing ? "压缩中..." : "压缩图片" }}
+                {{ isCompressing ? t('compressing') : t('compress') }}
               </button>
             </div>
           </div>
 
           <div class="stats-section">
-            <h3>统计信息</h3>
+            <h3>{{ t('stats') }}</h3>
             <div class="stats-row">
               <div class="stat-box">
                 <div class="stat-number">{{ files.length }}</div>
-                <div class="stat-text">文件数量</div>
+                <div class="stat-text">{{ t('filesCount') }}</div>
               </div>
               <div class="stat-box">
                 <div class="stat-number">{{ totalSize }}</div>
-                <div class="stat-text">总大小</div>
+                <div class="stat-text">{{ t('totalSize') }}</div>
               </div>
               <div class="stat-box">
                 <div class="stat-number">{{ totalSavingsPercent }}</div>
-                <div class="stat-text">优化</div>
+                <div class="stat-text">{{ t('optimize') }}</div>
               </div>
             </div>
           </div>
@@ -481,9 +644,9 @@ const clearFiles = () => {
               <polyline points="7 10 12 15 17 10" />
               <line x1="12" y1="15" x2="12" y2="3" />
             </svg>
-            <h2>拖拽图片到这里</h2>
-            <p>支持 PNG、JPG、WebP 格式</p>
-            <button class="btn-file" @click.stop="selectFiles">选择文件</button>
+            <h2>{{ t('dropHere') }}</h2>
+            <p>{{ t('supported') }}</p>
+            <button class="btn-file" @click.stop="selectFiles">{{ t('chooseFiles') }}</button>
           </div>
 
           <div v-else class="files-area">
@@ -494,17 +657,17 @@ const clearFiles = () => {
                   <polyline points="7 10 12 15 17 10" />
                   <line x1="12" y1="15" x2="12" y2="3" />
                 </svg>
-                文件列表 ({{ files.length }})
+                {{ t('fileList') }} ({{ files.length }})
               </h3>
               <div class="toolbar-actions">
-                <button class="btn-add" @click="selectFiles" :disabled="isCompressing">添加文件</button>
-                <button class="btn-clear-list" @click="clearFiles" :disabled="files.length === 0 || isCompressing">清空</button>
+                <button class="btn-add" @click="selectFiles" :disabled="isCompressing">{{ t('addFiles') }}</button>
+                <button class="btn-clear-list" @click="clearFiles" :disabled="files.length === 0 || isCompressing">{{ t('clear') }}</button>
               </div>
             </div>
 
             <div v-if="isCompressing" class="progress-container">
               <div class="progress-header">
-                <span>总进度</span>
+                <span>{{ t('totalProgress') }}</span>
                 <span>{{ totalProgress }}%</span>
               </div>
               <div class="progress-bar">
@@ -516,12 +679,12 @@ const clearFiles = () => {
               <table class="files-table">
                 <thead>
                   <tr>
-                    <th class="col-thumb">预览</th>
-                    <th class="col-name">文件名</th>
-                    <th class="col-format">格式</th>
-                    <th class="col-size">大小</th>
-                    <th class="col-status">状态</th>
-                    <th class="col-result">结果</th>
+                    <th class="col-thumb">{{ t('preview') }}</th>
+                    <th class="col-name">{{ t('fileName') }}</th>
+                    <th class="col-format">{{ t('format') }}</th>
+                    <th class="col-size">{{ t('size') }}</th>
+                    <th class="col-status">{{ t('status') }}</th>
+                    <th class="col-result">{{ t('result') }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -566,13 +729,53 @@ html, body, #app {
   overflow: hidden;
 }
 
+:root,
+.theme-light {
+  --bg-app: #f5f7fa;
+  --bg-panel: #ffffff;
+  --bg-muted: #f5f7fa;
+  --border: #e4e7ed;
+  --border-strong: #dcdfe6;
+  --border-light: #f0f0f0;
+  --text-primary: #303133;
+  --text-secondary: #606266;
+  --text-muted: #909399;
+  --text-disabled: #c0c4cc;
+  --primary: #409eff;
+  --primary-hover: #66b1ff;
+  --primary-soft: #ecf5ff;
+  --primary-soft-border: #d9ecff;
+  --success: #67c23a;
+  --danger: #f56c6c;
+}
+
+.theme-dark {
+  --bg-app: #141517;
+  --bg-panel: #1b1d22;
+  --bg-muted: #20232a;
+  --border: #2a2f37;
+  --border-strong: #323844;
+  --border-light: #252a33;
+  --text-primary: #e5e7eb;
+  --text-secondary: #c4c8d0;
+  --text-muted: #9aa1ad;
+  --text-disabled: #6b7280;
+  --primary: #5aa7ff;
+  --primary-hover: #76b7ff;
+  --primary-soft: #1b2b3f;
+  --primary-soft-border: #2a3b52;
+  --success: #7bd34f;
+  --danger: #ff6b6b;
+}
+
 /* App Layout */
 .app-wrapper {
   width: 100vw;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f5f7fa;
+  background: var(--bg-app);
+  color: var(--text-primary);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
@@ -580,8 +783,8 @@ html, body, #app {
 .app-header {
   height: 56px;
   min-height: 56px;
-  background: #fff;
-  border-bottom: 1px solid #e4e7ed;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -593,7 +796,7 @@ html, body, #app {
 .app-title {
   font-size: 18px;
   font-weight: 600;
-  color: #409eff;
+  color: var(--primary);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -618,8 +821,8 @@ html, body, #app {
   width: 320px;
   min-width: 280px;
   max-width: 380px;
-  background: #fff;
-  border-right: 1px solid #e4e7ed;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -637,10 +840,10 @@ html, body, #app {
 }
 
 .settings-section {
-  background: #f5f7fa;
+  background: var(--bg-muted);
   border-radius: 0;
   padding: 16px;
-  border-bottom: 1px solid #e4e7ed;
+  border-bottom: 1px solid var(--border);
 }
 
 .section-title {
@@ -649,19 +852,19 @@ html, body, #app {
   gap: 8px;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #e4e7ed;
+  border-bottom: 1px solid var(--border);
 }
 
 .section-title svg {
   width: 18px;
   height: 18px;
-  color: #409eff;
+  color: var(--primary);
 }
 
 .section-title h3 {
   font-size: 15px;
   font-weight: 600;
-  color: #303133;
+  color: var(--text-primary);
 }
 
 .setting-group {
@@ -678,7 +881,7 @@ html, body, #app {
   gap: 8px;
   cursor: pointer;
   font-size: 14px;
-  color: #606266;
+  color: var(--text-secondary);
 }
 
 .checkbox-label input[type="checkbox"] {
@@ -689,7 +892,7 @@ html, body, #app {
 
 .hint {
   font-size: 12px;
-  color: #909399;
+  color: var(--text-muted);
   margin-top: 4px;
   margin-left: 22px;
 }
@@ -697,7 +900,7 @@ html, body, #app {
 .input-label {
   display: block;
   font-size: 14px;
-  color: #606266;
+  color: var(--text-secondary);
   margin-bottom: 8px;
 }
 
@@ -719,16 +922,18 @@ html, body, #app {
 .dimension-input label {
   display: block;
   font-size: 12px;
-  color: #909399;
+  color: var(--text-muted);
   margin-bottom: 4px;
 }
 
 .dimension-input input {
   width: 100%;
   padding: 6px 10px;
-  border: 1px solid #dcdfe6;
+  border: 1px solid var(--border-strong);
   border-radius: 4px;
   font-size: 13px;
+  background: var(--bg-panel);
+  color: var(--text-secondary);
 }
 
 .path-row {
@@ -739,27 +944,60 @@ html, body, #app {
 .path-row input {
   flex: 1;
   padding: 8px 12px;
-  border: 1px solid #dcdfe6;
+  border: 1px solid var(--border-strong);
   border-radius: 4px;
   font-size: 13px;
-  background: #f5f7fa;
-  color: #606266;
+  background: var(--bg-muted);
+  color: var(--text-secondary);
 }
 
 .path-row button {
   padding: 8px 16px;
-  background: #fff;
-  border: 1px solid #dcdfe6;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-strong);
   border-radius: 4px;
   font-size: 13px;
-  color: #606266;
+  color: var(--text-secondary);
   cursor: pointer;
   white-space: nowrap;
 }
 
 .path-row button:hover {
-  border-color: #409eff;
-  color: #409eff;
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.path-row select {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  font-size: 13px;
+  background: var(--bg-panel);
+  color: var(--text-secondary);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+    linear-gradient(135deg, var(--text-muted) 50%, transparent 50%),
+    linear-gradient(to right, transparent, transparent);
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 12px) 50%,
+    0 0;
+  background-size:
+    6px 6px,
+    6px 6px,
+    100% 100%;
+  background-repeat: no-repeat;
+  padding-right: 34px;
+}
+
+.path-row select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 25%, transparent);
 }
 
 .button-row {
@@ -767,13 +1005,13 @@ html, body, #app {
   gap: 10px;
   margin-top: 20px;
   padding-top: 16px;
-  border-top: 1px solid #e4e7ed;
+  border-top: 1px solid var(--border);
 }
 
 .btn-compress {
   flex: 1;
   padding: 10px 20px;
-  background: #409eff;
+  background: var(--primary);
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -784,7 +1022,7 @@ html, body, #app {
 }
 
 .btn-compress:hover:not(:disabled) {
-  background: #66b1ff;
+  background: var(--primary-hover);
 }
 
 .btn-compress:disabled {
@@ -794,9 +1032,9 @@ html, body, #app {
 
 
 .stats-section {
-  background: #ecf5ff;
-  border-top: 1px solid #d9ecff;
-  border-bottom: 1px solid #d9ecff;
+  background: var(--primary-soft);
+  border-top: 1px solid var(--primary-soft-border);
+  border-bottom: 1px solid var(--primary-soft-border);
   border-radius: 0;
   padding: 16px;
   margin-top: auto;
@@ -804,7 +1042,7 @@ html, body, #app {
 
 .stats-section h3 {
   font-size: 14px;
-  color: #409eff;
+  color: var(--primary);
   margin-bottom: 12px;
 }
 
@@ -821,13 +1059,13 @@ html, body, #app {
 .stat-number {
   font-size: 24px;
   font-weight: 600;
-  color: #409eff;
+  color: var(--primary);
   line-height: 1.2;
 }
 
 .stat-text {
   font-size: 12px;
-  color: #909399;
+  color: var(--text-muted);
   margin-top: 4px;
 }
 
@@ -842,7 +1080,7 @@ html, body, #app {
 .drop-area {
   width: 100%;
   height: 100%;
-  background: #fff;
+  background: var(--bg-panel);
   border-radius: 8px;
   border: 2px dashed transparent;
   overflow: hidden;
@@ -850,8 +1088,8 @@ html, body, #app {
 }
 
 .drop-area.is-dragging {
-  border-color: #409eff;
-  background: #f5f7fa;
+  border-color: var(--primary);
+  background: var(--bg-muted);
 }
 
 .empty-area {
@@ -872,23 +1110,23 @@ html, body, #app {
 .upload-icon {
   width: 64px;
   height: 64px;
-  color: #c0c4cc;
+  color: var(--text-disabled);
 }
 
 .empty-area h2 {
   font-size: 20px;
-  color: #606266;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
 .empty-area p {
   font-size: 14px;
-  color: #909399;
+  color: var(--text-muted);
 }
 
 .btn-file {
   padding: 10px 24px;
-  background: #409eff;
+  background: var(--primary);
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -899,7 +1137,7 @@ html, body, #app {
 }
 
 .btn-file:hover {
-  background: #66b1ff;
+  background: var(--primary-hover);
 }
 
 .files-area {
@@ -924,7 +1162,7 @@ html, body, #app {
   align-items: center;
   gap: 8px;
   font-size: 16px;
-  color: #303133;
+  color: var(--text-primary);
   font-weight: 500;
 }
 
@@ -935,7 +1173,7 @@ html, body, #app {
 
 .btn-add {
   padding: 6px 16px;
-  background: #409eff;
+  background: var(--primary);
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -945,7 +1183,7 @@ html, body, #app {
 }
 
 .btn-add:hover:not(:disabled) {
-  background: #66b1ff;
+  background: var(--primary-hover);
 }
 
 .btn-add:disabled {
@@ -958,7 +1196,7 @@ html, body, #app {
   height: 4px;
   -webkit-appearance: none;
   appearance: none;
-  background: #dcdfe6;
+  background: var(--border-strong);
   border-radius: 2px;
   outline: none;
 }
@@ -968,7 +1206,7 @@ html, body, #app {
   appearance: none;
   width: 16px;
   height: 16px;
-  background: #409eff;
+  background: var(--primary);
   border-radius: 50%;
   cursor: pointer;
 }
@@ -977,7 +1215,7 @@ html, body, #app {
   display: flex;
   justify-content: space-between;
   font-size: 12px;
-  color: #909399;
+  color: var(--text-muted);
   margin-top: 4px;
 }
 
@@ -990,9 +1228,9 @@ html, body, #app {
 
 .btn-clear-list {
   padding: 6px 14px;
-  background: #fff;
-  color: #606266;
-  border: 1px solid #dcdfe6;
+  background: var(--bg-panel);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-strong);
   border-radius: 4px;
   font-size: 13px;
   cursor: pointer;
@@ -1000,8 +1238,8 @@ html, body, #app {
 }
 
 .btn-clear-list:hover:not(:disabled) {
-  border-color: #409eff;
-  color: #409eff;
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .btn-clear-list:disabled {
@@ -1010,7 +1248,7 @@ html, body, #app {
 }
 
 .progress-container {
-  background: #f5f7fa;
+  background: var(--bg-muted);
   padding: 12px 16px;
   border-radius: 4px;
   margin-bottom: 16px;
@@ -1021,20 +1259,20 @@ html, body, #app {
   display: flex;
   justify-content: space-between;
   font-size: 13px;
-  color: #606266;
+  color: var(--text-secondary);
   margin-bottom: 8px;
 }
 
 .progress-bar {
   height: 6px;
-  background: #e4e7ed;
+  background: var(--border);
   border-radius: 3px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: #409eff;
+  background: var(--primary);
   border-radius: 3px;
   transition: width 0.3s ease;
 }
@@ -1042,9 +1280,9 @@ html, body, #app {
 .files-table-container {
   flex: 1;
   overflow: auto;
-  background: #fff;
+  background: var(--bg-panel);
   border-radius: 4px;
-  border: 1px solid #e4e7ed;
+  border: 1px solid var(--border);
 }
 
 .files-table {
@@ -1054,12 +1292,12 @@ html, body, #app {
 }
 
 .files-table th {
-  background: #f5f7fa;
+  background: var(--bg-muted);
   padding: 12px 16px;
   text-align: left;
   font-weight: 500;
-  color: #606266;
-  border-bottom: 1px solid #e4e7ed;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
   white-space: nowrap;
   position: sticky;
   top: 0;
@@ -1068,12 +1306,12 @@ html, body, #app {
 
 .files-table td {
   padding: 12px 16px;
-  border-bottom: 1px solid #f0f0f0;
-  color: #606266;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-secondary);
 }
 
 .files-table tbody tr:hover {
-  background: #f5f7fa;
+  background: var(--bg-muted);
 }
 
 .col-thumb {
@@ -1091,7 +1329,7 @@ html, body, #app {
 .thumb-placeholder {
   width: 40px;
   height: 40px;
-  background: #e4e7ed;
+  background: var(--border);
   border-radius: 4px;
   margin: 0 auto;
 }
@@ -1119,10 +1357,10 @@ html, body, #app {
   font-weight: 500;
 }
 
-.col-status.pending { color: #909399; }
-.col-status.processing { color: #409eff; }
-.col-status.success { color: #67c23a; }
-.col-status.error { color: #f56c6c; }
+.col-status.pending { color: var(--text-muted); }
+.col-status.processing { color: var(--primary); }
+.col-status.success { color: var(--success); }
+.col-status.error { color: var(--danger); }
 
 .col-result {
   width: 120px;
@@ -1130,13 +1368,13 @@ html, body, #app {
 }
 
 .col-result .savings {
-  color: #67c23a;
+  color: var(--success);
   font-weight: 600;
   margin-left: 8px;
 }
 
 .col-result .no-result {
-  color: #c0c4cc;
+  color: var(--text-disabled);
 }
 
 /* Scrollbar */
@@ -1146,15 +1384,15 @@ html, body, #app {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f5f7fa;
+  background: var(--bg-muted);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c0c4cc;
+  background: var(--text-disabled);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #909399;
+  background: var(--text-muted);
 }
 </style>

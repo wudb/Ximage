@@ -3,6 +3,30 @@
 version = 4
 
 [[package]]
+name = "Ximage"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "base64 0.21.7",
+ "image 0.24.9",
+ "imagequant",
+ "img-parts",
+ "lazy_static",
+ "log",
+ "oxipng",
+ "png",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-dialog",
+ "tauri-plugin-fs",
+ "tauri-plugin-os",
+ "uuid",
+ "webp 0.3.1",
+]
+
+[[package]]
 name = "adler2"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5225,30 +5249,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "05f360fc0b24296329c78fda852a1e9ae82de9cf7b27dae4b7f62f118f77b9ed"
 dependencies = [
  "tap",
-]
-
-[[package]]
-name = "x-image"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "base64 0.21.7",
- "image 0.24.9",
- "imagequant",
- "img-parts",
- "lazy_static",
- "log",
- "oxipng",
- "png",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
- "tauri-plugin-fs",
- "tauri-plugin-os",
- "uuid",
- "webp 0.3.1",
 ]
 
 [[package]]
