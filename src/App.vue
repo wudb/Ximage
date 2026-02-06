@@ -525,14 +525,6 @@ const clearFiles = () => {
 
 <template>
   <div class="app-wrapper">
-    <!-- Header -->
-    <header class="app-header">
-      <div class="app-title">
-        <img class="app-icon" src="/src-tauri/icons/icon.png" alt="Ximage" />
-        <span>{{ t('appName') }}</span>
-      </div>
-    </header>
-
     <!-- Main Content -->
     <div class="content-area">
       <!-- Left Panel - Settings -->
@@ -731,40 +723,42 @@ html, body, #app {
 
 :root,
 .theme-light {
-  --bg-app: #f5f7fa;
+  --bg-app: #f4f5f9;
   --bg-panel: #ffffff;
-  --bg-muted: #f5f7fa;
-  --border: #e4e7ed;
-  --border-strong: #dcdfe6;
-  --border-light: #f0f0f0;
-  --text-primary: #303133;
-  --text-secondary: #606266;
-  --text-muted: #909399;
-  --text-disabled: #c0c4cc;
-  --primary: #409eff;
-  --primary-hover: #66b1ff;
-  --primary-soft: #ecf5ff;
-  --primary-soft-border: #d9ecff;
-  --success: #67c23a;
-  --danger: #f56c6c;
+  --bg-sidebar: #eef0f5;
+  --bg-muted: #f7f8fb;
+  --border: #e5e7ef;
+  --border-strong: #d6dae6;
+  --border-light: #eef0f5;
+  --text-primary: #1f2430;
+  --text-secondary: #4a5161;
+  --text-muted: #7a8191;
+  --text-disabled: #b2b7c3;
+  --primary: #4f7cff;
+  --primary-hover: #6a8dff;
+  --primary-soft: #eef2ff;
+  --primary-soft-border: #d9e0ff;
+  --success: #48b870;
+  --danger: #ff6b6b;
 }
 
 .theme-dark {
-  --bg-app: #141517;
-  --bg-panel: #1b1d22;
-  --bg-muted: #20232a;
-  --border: #2a2f37;
-  --border-strong: #323844;
-  --border-light: #252a33;
-  --text-primary: #e5e7eb;
-  --text-secondary: #c4c8d0;
+  --bg-app: #101218;
+  --bg-panel: #171a21;
+  --bg-sidebar: #14171d;
+  --bg-muted: #1e222b;
+  --border: #2b2f39;
+  --border-strong: #343945;
+  --border-light: #232834;
+  --text-primary: #eef0f4;
+  --text-secondary: #c8ccd6;
   --text-muted: #9aa1ad;
   --text-disabled: #6b7280;
-  --primary: #5aa7ff;
-  --primary-hover: #76b7ff;
-  --primary-soft: #1b2b3f;
-  --primary-soft-border: #2a3b52;
-  --success: #7bd34f;
+  --primary: #5b8dff;
+  --primary-hover: #739dff;
+  --primary-soft: #1c253a;
+  --primary-soft-border: #2a3550;
+  --success: #61d28f;
   --danger: #ff6b6b;
 }
 
@@ -774,55 +768,32 @@ html, body, #app {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--bg-app);
+  background:
+    radial-gradient(900px 380px at 82% -10%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 60%),
+    var(--bg-app);
   color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-}
-
-/* Header */
-.app-header {
-  height: 56px;
-  min-height: 56px;
-  background: var(--bg-panel);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 12px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-}
-
-
-.app-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--primary);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.app-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
+  font-family: "Manrope", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: 0.1px;
 }
 
 /* Content Area */
 .content-area {
   flex: 1;
-  display: flex;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 18px;
   overflow: hidden;
   min-height: 0;
+  padding: 6px 24px 24px;
 }
 
 /* Settings Panel */
 .settings-panel {
-  width: 320px;
-  min-width: 280px;
-  max-width: 380px;
-  background: var(--bg-panel);
-  border-right: 1px solid var(--border);
+  width: 100%;
+  min-width: 0;
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border);
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -833,17 +804,20 @@ html, body, #app {
 .panel-content {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 14px;
+  padding: 14px;
 }
 
 .settings-section {
-  background: var(--bg-muted);
-  border-radius: 0;
+  background: var(--bg-panel);
+  border-radius: 14px;
   padding: 16px;
-  border-bottom: 1px solid var(--border);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.06);
 }
 
 .section-title {
@@ -858,7 +832,7 @@ html, body, #app {
 .section-title svg {
   width: 18px;
   height: 18px;
-  color: var(--primary);
+  color: var(--text-muted);
 }
 
 .section-title h3 {
@@ -878,7 +852,7 @@ html, body, #app {
 .checkbox-label {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   cursor: pointer;
   font-size: 14px;
   color: var(--text-secondary);
@@ -939,27 +913,33 @@ html, body, #app {
 .path-row {
   display: flex;
   gap: 8px;
+  min-width: 0;
 }
 
 .path-row input {
   flex: 1;
-  padding: 8px 12px;
+  min-width: 0;
+  padding: 9px 12px;
   border: 1px solid var(--border-strong);
-  border-radius: 4px;
+  border-radius: 10px;
   font-size: 13px;
   background: var(--bg-muted);
   color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .path-row button {
-  padding: 8px 16px;
+  padding: 9px 16px;
   background: var(--bg-panel);
   border: 1px solid var(--border-strong);
-  border-radius: 4px;
+  border-radius: 10px;
   font-size: 13px;
   color: var(--text-secondary);
   cursor: pointer;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .path-row button:hover {
@@ -969,9 +949,10 @@ html, body, #app {
 
 .path-row select {
   flex: 1;
-  padding: 8px 12px;
+  min-width: 0;
+  padding: 9px 12px;
   border: 1px solid var(--border-strong);
-  border-radius: 4px;
+  border-radius: 10px;
   font-size: 13px;
   background: var(--bg-panel);
   color: var(--text-secondary);
@@ -992,6 +973,9 @@ html, body, #app {
     100% 100%;
   background-repeat: no-repeat;
   padding-right: 34px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .path-row select:focus {
@@ -1010,19 +994,21 @@ html, body, #app {
 
 .btn-compress {
   flex: 1;
-  padding: 10px 20px;
+  padding: 11px 20px;
   background: var(--primary);
   color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 12px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s ease;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--primary) 28%, transparent);
 }
 
 .btn-compress:hover:not(:disabled) {
   background: var(--primary-hover);
+  transform: translateY(-1px);
 }
 
 .btn-compress:disabled {
@@ -1032,17 +1018,17 @@ html, body, #app {
 
 
 .stats-section {
-  background: var(--primary-soft);
-  border-top: 1px solid var(--primary-soft-border);
-  border-bottom: 1px solid var(--primary-soft-border);
-  border-radius: 0;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
   padding: 16px;
-  margin-top: auto;
+  margin-top: 0;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.06);
 }
 
 .stats-section h3 {
   font-size: 14px;
-  color: var(--primary);
+  color: var(--text-primary);
   margin-bottom: 12px;
 }
 
@@ -1054,12 +1040,16 @@ html, body, #app {
 
 .stat-box {
   text-align: center;
+  padding: 10px 8px;
+  border-radius: 12px;
+  background: var(--bg-muted);
+  border: 1px solid var(--border-light);
 }
 
 .stat-number {
   font-size: 24px;
   font-weight: 600;
-  color: var(--primary);
+  color: var(--text-primary);
   line-height: 1.2;
 }
 
@@ -1081,10 +1071,11 @@ html, body, #app {
   width: 100%;
   height: 100%;
   background: var(--bg-panel);
-  border-radius: 8px;
-  border: 2px dashed transparent;
+  border-radius: 18px;
+  border: 1px solid var(--border);
   overflow: hidden;
-  transition: all 0.3s;
+  transition: all 0.2s ease;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.08);
 }
 
 .drop-area.is-dragging {
@@ -1101,16 +1092,13 @@ html, body, #app {
   justify-content: center;
   gap: 16px;
   cursor: pointer;
-}
-
-.empty-area:hover {
-  border-color: #409eff;
+  padding: 32px;
 }
 
 .upload-icon {
   width: 64px;
   height: 64px;
-  color: var(--text-disabled);
+  color: var(--text-muted);
 }
 
 .empty-area h2 {
@@ -1129,15 +1117,16 @@ html, body, #app {
   background: var(--primary);
   color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 12px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.2s ease;
 }
 
 .btn-file:hover {
   background: var(--primary-hover);
+  transform: translateY(-1px);
 }
 
 .files-area {
@@ -1145,14 +1134,14 @@ html, body, #app {
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 16px;
+  padding: 18px;
 }
 
 .files-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   flex-shrink: 0;
   padding: 0 4px;
 }
@@ -1161,7 +1150,7 @@ html, body, #app {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 16px;
+  font-size: 15px;
   color: var(--text-primary);
   font-weight: 500;
 }
@@ -1172,14 +1161,14 @@ html, body, #app {
 }
 
 .btn-add {
-  padding: 6px 16px;
+  padding: 7px 16px;
   background: var(--primary);
   color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 10px;
   font-size: 13px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.2s ease;
 }
 
 .btn-add:hover:not(:disabled) {
@@ -1209,6 +1198,7 @@ html, body, #app {
   background: var(--primary);
   border-radius: 50%;
   cursor: pointer;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 35%, transparent);
 }
 
 .range-labels {
@@ -1227,14 +1217,14 @@ html, body, #app {
 }
 
 .btn-clear-list {
-  padding: 6px 14px;
+  padding: 7px 14px;
   background: var(--bg-panel);
   color: var(--text-secondary);
   border: 1px solid var(--border-strong);
-  border-radius: 4px;
+  border-radius: 10px;
   font-size: 13px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s ease;
 }
 
 .btn-clear-list:hover:not(:disabled) {
@@ -1250,7 +1240,7 @@ html, body, #app {
 .progress-container {
   background: var(--bg-muted);
   padding: 12px 16px;
-  border-radius: 4px;
+  border-radius: 12px;
   margin-bottom: 16px;
   flex-shrink: 0;
 }
@@ -1281,7 +1271,7 @@ html, body, #app {
   flex: 1;
   overflow: auto;
   background: var(--bg-panel);
-  border-radius: 4px;
+  border-radius: 12px;
   border: 1px solid var(--border);
 }
 
