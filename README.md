@@ -1,8 +1,10 @@
 # Ximage Image Compressor
 
+Language: **English** | [中文](README_CN.md)
+
 A cross-platform desktop image compression app built with Tauri 2.x, Vue 3, TypeScript, and TailwindCSS.
 
-> 中文版: `readme.md`
+> 中文版: `README_CN.md`
 
 ## Features
 

@@ -1,5 +1,7 @@
 # Ximage 图片压缩工具
 
+语言: **中文** | [English](README.md)
+
 一款使用 Tauri 2.x、Vue 3、TypeScript 和 TailwindCSS 构建的跨平台桌面图片压缩应用。
 
 > English version: `README.md`
