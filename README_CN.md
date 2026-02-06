@@ -4,8 +4,6 @@
 
 一款使用 Tauri 2.x、Vue 3、TypeScript 和 TailwindCSS 构建的跨平台桌面图片压缩应用。
 
-> English version: `README.md`
-
 ## 功能特性
 
 - ✅ 两栏式界面设计（左侧设置面板，右侧拖拽区域）
