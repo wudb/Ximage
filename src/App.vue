@@ -601,23 +601,7 @@ const clearFiles = () => {
             </div>
           </div>
 
-          <div class="stats-section">
-            <h3>{{ t('stats') }}</h3>
-            <div class="stats-row">
-              <div class="stat-box">
-                <div class="stat-number">{{ files.length }}</div>
-                <div class="stat-text">{{ t('filesCount') }}</div>
-              </div>
-              <div class="stat-box">
-                <div class="stat-number">{{ totalSize }}</div>
-                <div class="stat-text">{{ t('totalSize') }}</div>
-              </div>
-              <div class="stat-box">
-                <div class="stat-number">{{ totalSavingsPercent }}</div>
-                <div class="stat-text">{{ t('optimize') }}</div>
-              </div>
-            </div>
-          </div>
+          
         </div>
       </aside>
 
