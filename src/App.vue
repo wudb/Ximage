@@ -784,7 +784,7 @@ html, body, #app {
   gap: 18px;
   overflow: hidden;
   min-height: 0;
-  padding: 6px 24px 24px;
+  padding: 24px;
 }
 
 /* Settings Panel */
@@ -816,7 +816,7 @@ html, body, #app {
   background: var(--bg-panel);
   border-radius: 14px;
   padding: 16px;
-  border: 1px solid var(--border);
+  border: none;
   box-shadow: 0 8px 22px rgba(0,0,0,0.06);
 }
 
