@@ -1,6 +1,6 @@
 {
-  "productName": "x-image",
-  "version": "0.0.0",
+  "productName": "Ximage",
+  "version": "0.0.1",
   "identifier": "com.tauri.image-compressor",
   "build": {
     "beforeDevCommand": "pnpm dev",
