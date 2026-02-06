@@ -1,0 +1,22 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#F97316"/>
+    </linearGradient>
+  </defs>
+  <rect x="24" y="24" width="464" height="464" rx="100" fill="url(#g)"/>
+  <rect x="110" y="130" width="292" height="262" rx="32" stroke="white" stroke-opacity="0.9" stroke-width="10"/>
+  <circle cx="155" cy="185" r="18" fill="white" fill-opacity="0.86"/>
+
+  <!-- compression arrows -->
+  <rect x="184" y="150" width="12" height="130" rx="6" fill="white" fill-opacity="0.9"/>
+  <path d="M164 280 L204 280 L184 310 Z" fill="white" fill-opacity="0.9"/>
+
+  <rect x="314" y="220" width="12" height="130" rx="6" fill="white" fill-opacity="0.9"/>
+  <path d="M294 220 L334 220 L314 190 Z" fill="white" fill-opacity="0.9"/>
+
+  <!-- X letter -->
+  <path d="M208 224 L224 208 L304 288 L288 304 Z" fill="white" fill-opacity="0.86"/>
+  <path d="M304 224 L288 208 L208 288 L224 304 Z" fill="white" fill-opacity="0.86"/>
+</svg>
