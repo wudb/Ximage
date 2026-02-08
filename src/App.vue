@@ -4,6 +4,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
 import { readFile, stat } from '@tauri-apps/plugin-fs';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 
 interface CompressionSettings {
   lossless: boolean;
@@ -241,6 +242,8 @@ const buildFileData = async (file: FileItem, index: number) => {
 };
 
 let unlistenDragDrop: null | (() => void) = null;
+let titlebarDragHandler: ((event: PointerEvent) => void) | null = null;
+let titlebarEl: HTMLElement | null = null;
 onMounted(async () => {
   try {
     const storedSettings = localStorage.getItem(settingsStorageKey);
@@ -282,6 +285,19 @@ onMounted(async () => {
         }
       }
     });
+
+    titlebarEl = document.querySelector('.titlebar');
+    if (titlebarEl) {
+      const appWindow = getCurrentWindow();
+      titlebarDragHandler = (event: PointerEvent) => {
+        if (event.button !== 0) return;
+        const target = event.target as HTMLElement | null;
+        if (target && target.closest('button, input, select, textarea, a')) return;
+        event.preventDefault();
+        appWindow.startDragging();
+      };
+      titlebarEl.addEventListener('pointerdown', titlebarDragHandler);
+    }
   } catch (e) {
     console.error('注册拖拽事件失败:', e);
   }
@@ -322,6 +338,11 @@ onBeforeUnmount(() => {
   if (unlistenDragDrop) {
     unlistenDragDrop();
     unlistenDragDrop = null;
+  }
+  if (titlebarEl && titlebarDragHandler) {
+    titlebarEl.removeEventListener('pointerdown', titlebarDragHandler);
+    titlebarDragHandler = null;
+    titlebarEl = null;
   }
   systemThemeQuery.removeEventListener('change', handleSystemThemeChange);
 });
@@ -525,6 +546,14 @@ const clearFiles = () => {
 
 <template>
   <div class="app-wrapper">
+    <div class="titlebar">
+      <div class="titlebar-left"></div>
+      <div class="titlebar-center">
+        <span>{{ t('appName') }}</span>
+      </div>
+      <div class="titlebar-right"></div>
+    </div>
+
     <!-- Main Content -->
     <div class="content-area">
       <!-- Left Panel - Settings -->
@@ -758,6 +787,47 @@ html, body, #app {
   color: var(--text-primary);
   font-family: "Manrope", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   letter-spacing: 0.1px;
+}
+
+/* Titlebar */
+.titlebar {
+  height: 40px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 18px;
+  padding-left: 88px; /* leave space for macOS traffic lights */
+  padding-right: 64px;
+  background: var(--bg-app);
+  border-bottom: none;
+  user-select: none;
+  cursor: grab;
+  -webkit-user-select: none;
+}
+
+.titlebar:active {
+  cursor: grabbing;
+}
+
+.titlebar-left {
+  height: 100%;
+  min-width: 0;
+}
+
+.titlebar-center {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.2px;
+  padding: 0 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.titlebar-right {
+  height: 100%;
+  min-width: 0;
 }
 
 /* Content Area */

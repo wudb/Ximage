@@ -11,7 +11,7 @@
   "app": {
     "windows": [
       {
-        "title": "Ximage - 图片压缩工具",
+        "title": " ",
         "width": 1000,
         "height": 800,
         "resizable": true,
@@ -19,6 +19,7 @@
         "minHeight": 700,
         "center": true,
         "decorations": true,
+        "titleBarStyle": "Overlay",
         "dragDropEnabled": true
       }
     ],
