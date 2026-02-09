@@ -242,8 +242,6 @@ const buildFileData = async (file: FileItem, index: number) => {
 };
 
 let unlistenDragDrop: null | (() => void) = null;
-let titlebarDragHandler: ((event: PointerEvent) => void) | null = null;
-let titlebarEl: HTMLElement | null = null;
 onMounted(async () => {
   try {
     const storedSettings = localStorage.getItem(settingsStorageKey);
@@ -286,18 +284,6 @@ onMounted(async () => {
       }
     });
 
-    titlebarEl = document.querySelector('.titlebar');
-    if (titlebarEl) {
-      const appWindow = getCurrentWindow();
-      titlebarDragHandler = (event: PointerEvent) => {
-        if (event.button !== 0) return;
-        const target = event.target as HTMLElement | null;
-        if (target && target.closest('button, input, select, textarea, a')) return;
-        event.preventDefault();
-        appWindow.startDragging();
-      };
-      titlebarEl.addEventListener('pointerdown', titlebarDragHandler);
-    }
   } catch (e) {
     console.error('注册拖拽事件失败:', e);
   }
@@ -339,13 +325,9 @@ onBeforeUnmount(() => {
     unlistenDragDrop();
     unlistenDragDrop = null;
   }
-  if (titlebarEl && titlebarDragHandler) {
-    titlebarEl.removeEventListener('pointerdown', titlebarDragHandler);
-    titlebarDragHandler = null;
-    titlebarEl = null;
-  }
   systemThemeQuery.removeEventListener('change', handleSystemThemeChange);
 });
+
 
 const selectOutputPath = async () => {
   try {
@@ -442,6 +424,14 @@ const onDrop = (e: DragEvent) => {
       processFile(file);
     });
   }
+};
+
+const onTitlebarMouseDown = async (event: MouseEvent) => {
+  if (event.button !== 0) return;
+  const target = event.target as HTMLElement | null;
+  if (target && target.closest('button, input, select, textarea, a')) return;
+  event.preventDefault();
+  await getCurrentWindow().startDragging();
 };
 
 const processFile = (file: File) => {
@@ -546,7 +536,7 @@ const clearFiles = () => {
 
 <template>
   <div class="app-wrapper">
-    <div class="titlebar">
+    <div class="titlebar" @mousedown="onTitlebarMouseDown">
       <div class="titlebar-left"></div>
       <div class="titlebar-center">
         <span>{{ t('appName') }}</span>
@@ -791,11 +781,12 @@ html, body, #app {
 
 /* Titlebar */
 .titlebar {
-  height: 40px;
+  height: 56px;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   padding: 0 18px;
+  padding-top: 6px;
   padding-left: 88px; /* leave space for macOS traffic lights */
   padding-right: 64px;
   background: var(--bg-app);

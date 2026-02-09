@@ -19,6 +19,7 @@
         "minHeight": 700,
         "center": true,
         "decorations": true,
+        "hiddenTitle": true,
         "titleBarStyle": "Overlay",
         "dragDropEnabled": true
       }
