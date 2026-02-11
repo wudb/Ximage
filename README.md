@@ -9,12 +9,14 @@ A cross-platform desktop image compression app built with Tauri 2.x, Vue 3, Type
 - ✅ Two-column layout (settings on the left, drop zone on the right)
 - ✅ Supports JPG/JPEG, PNG, WEBP
 - ✅ Lossy compression with manual quality sliders
-- ✅ Lossless option (PNG/WebP, speed-optimized)
+- ✅ Lossless option (PNG/WebP; JPEG is still lossy)
 - ✅ PNG lossy quantization for better size reduction
-- ✅ Drag & drop import (native file paths)
-- ✅ Image preview with thumbnails
-- ✅ Real-time progress (per-file completion)
-- ✅ Remembers last settings and output path
+- ✅ Drag & drop import + file picker
+- ✅ Image preview with thumbnails and per-file status
+- ✅ Overall progress bar
+- ✅ Remembers last settings, language, theme, and output path
+- ✅ System/Light/Dark theme
+- ✅ Bilingual UI (中文 / English)
 - ✅ Cross-platform (macOS, Windows)
 
 ## Tech Stack
@@ -23,7 +25,7 @@ A cross-platform desktop image compression app built with Tauri 2.x, Vue 3, Type
 - **UI**: TailwindCSS
 - **Desktop**: Tauri 2.x
 - **Package Manager**: pnpm
-- **Image Processing**: Rust (`image-rs`, `imagequant`, `oxipng`, `libwebp`)
+- **Image Processing**: Rust (`image`, `imagequant`, `oxipng`, `webp`, `png`, `img-parts`)
 
 ## Usage
 
@@ -44,6 +46,7 @@ A cross-platform desktop image compression app built with Tauri 2.x, Vue 3, Type
 - **No output folder**: will overwrite original files
 - **Dragged files**: if original path is unavailable, you will be asked to select an output folder
 - **PNG lossy**: uses palette quantization for smaller size with possible minor artifacts
+- **EXIF**: JPEG EXIF is preserved when possible
 
 ## Development
 
