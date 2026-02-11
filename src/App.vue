@@ -789,7 +789,7 @@ html, body, #app {
   padding-top: 6px;
   padding-left: 88px; /* leave space for macOS traffic lights */
   padding-right: 64px;
-  background: var(--bg-app);
+  background: transparent;
   border-bottom: none;
   user-select: none;
   cursor: grab;
