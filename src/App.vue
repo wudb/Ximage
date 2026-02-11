@@ -671,37 +671,39 @@ const clearFiles = () => {
             </div>
 
             <div class="files-table-container">
-              <table class="files-table">
-                <thead>
-                  <tr>
-                    <th class="col-thumb">{{ t('preview') }}</th>
-                    <th class="col-name">{{ t('fileName') }}</th>
-                    <th class="col-format">{{ t('format') }}</th>
-                    <th class="col-size">{{ t('size') }}</th>
-                    <th class="col-status">{{ t('status') }}</th>
-                    <th class="col-result">{{ t('result') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(file, index) in files" :key="index">
-                    <td class="col-thumb">
-                      <img v-if="file.url" :src="file.url" :alt="file.name" />
-                      <div v-else class="thumb-placeholder"></div>
-                    </td>
-                    <td class="col-name" :title="file.name">{{ file.name }}</td>
-                    <td class="col-format">{{ file.format }}</td>
-                    <td class="col-size">{{ formatSize(file.size) }}</td>
-                    <td class="col-status" :class="file.status">{{ getStatusText(file.status) }}</td>
-                    <td class="col-result">
-                      <template v-if="file.compressedSize > 0">
-                        <span>{{ formatSize(file.compressedSize) }}</span>
-                        <span class="savings">↓{{ file.compressionRatio }}%</span>
-                      </template>
-                      <span v-else class="no-result">-</span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+              <div class="files-table-scroll">
+                <table class="files-table">
+                  <thead>
+                    <tr>
+                      <th class="col-thumb">{{ t('preview') }}</th>
+                      <th class="col-name">{{ t('fileName') }}</th>
+                      <th class="col-format">{{ t('format') }}</th>
+                      <th class="col-size">{{ t('size') }}</th>
+                      <th class="col-status">{{ t('status') }}</th>
+                      <th class="col-result">{{ t('result') }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(file, index) in files" :key="index">
+                      <td class="col-thumb">
+                        <img v-if="file.url" :src="file.url" :alt="file.name" />
+                        <div v-else class="thumb-placeholder"></div>
+                      </td>
+                      <td class="col-name" :title="file.name">{{ file.name }}</td>
+                      <td class="col-format">{{ file.format }}</td>
+                      <td class="col-size">{{ formatSize(file.size) }}</td>
+                      <td class="col-status" :class="file.status">{{ getStatusText(file.status) }}</td>
+                      <td class="col-result">
+                        <template v-if="file.compressedSize > 0">
+                          <span>{{ formatSize(file.compressedSize) }}</span>
+                          <span class="savings">↓{{ file.compressionRatio }}%</span>
+                        </template>
+                        <span v-else class="no-result">-</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -743,6 +745,9 @@ html, body, #app {
   --primary-soft-border: #d9e0ff;
   --success: #48b870;
   --danger: #ff6b6b;
+  --app-surface:
+    radial-gradient(900px 380px at 82% -10%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 60%),
+    var(--bg-app);
 }
 
 .theme-dark {
@@ -763,6 +768,9 @@ html, body, #app {
   --primary-soft-border: #2a3550;
   --success: #61d28f;
   --danger: #ff6b6b;
+  --app-surface:
+    radial-gradient(900px 380px at 82% -10%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 60%),
+    var(--bg-app);
 }
 
 /* App Layout */
@@ -771,9 +779,7 @@ html, body, #app {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background:
-    radial-gradient(900px 380px at 82% -10%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 60%),
-    var(--bg-app);
+  background: var(--app-surface);
   color: var(--text-primary);
   font-family: "Manrope", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   letter-spacing: 0.1px;
@@ -1314,16 +1320,29 @@ html, body, #app {
 
 .files-table-container {
   flex: 1;
-  overflow: auto;
+  overflow: hidden;
   background: var(--bg-panel);
   border-radius: 12px;
   border: 1px solid var(--border);
+}
+.files-table-scroll {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
 }
 
 .files-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
+}
+
+.files-table thead th:first-child {
+  border-top-left-radius: 12px;
+}
+
+.files-table thead th:last-child {
+  border-top-right-radius: 12px;
 }
 
 .files-table th {
