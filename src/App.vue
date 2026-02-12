@@ -835,7 +835,7 @@ html, body, #app {
   gap: 18px;
   overflow: hidden;
   min-height: 0;
-  padding: 24px;
+  padding: 12px 24px 24px;
 }
 
 /* Settings Panel */
