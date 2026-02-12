@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
 import { readFile, stat } from '@tauri-apps/plugin-fs';
@@ -365,19 +365,6 @@ const selectFiles = async () => {
     console.error('选择文件失败:', error);
   }
 };
-
-const totalSize = computed(() => {
-  const totalBytes = files.value.reduce((sum, file) => sum + file.size, 0);
-  return formatSize(totalBytes);
-});
-
-const totalSavingsPercent = computed(() => {
-  const original = files.value.reduce((sum, file) => sum + file.size, 0);
-  const compressed = files.value.reduce((sum, file) => sum + (file.compressedSize || 0), 0);
-  if (original === 0) return '0%';
-  const percent = Math.round(((original - compressed) / original) * 100);
-  return `${percent}%`;
-});
 
 const formatSize = (size: number): string => {
   if (size < 1024) return `${size} B`;

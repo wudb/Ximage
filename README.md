@@ -4,6 +4,11 @@ Language: **English** | [中文](README_CN.md)
 
 A cross-platform desktop image compression app built with Tauri 2.x, Vue 3, TypeScript, and TailwindCSS.
 
+## Release
+
+- Current version: `0.0.2`
+- macOS DMG: `Ximage-0.0.2.dmg`
+
 ## Features
 
 - ✅ Two-column layout (settings on the left, drop zone on the right)
